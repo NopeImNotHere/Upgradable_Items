@@ -1,0 +1,20 @@
+UAI {
+    permission UpgradeItems.rank
+    help Main Command to all other Commands
+
+    GUI-Open {
+    permission UpgradeItems.GUI
+    help Opens GUI for the Upgrade Table
+    user player
+    hook UIGuiOpen
+    }
+
+    Spawn-Villager {
+    permission UpgradeItems.SpawnVillager
+    help Spawn the Villager to Open the GUI
+    user player
+    hook UISpawnVillager
+    }
+
+}
+
