@@ -9,11 +9,11 @@ UAI {
     hook UIGuiOpen
     }
 
-    Spawn-Villager {
-    permission UpgradeItems.SpawnVillager
+    Spawn-NPC entityType:entity {
+    permission UpgradeItems.NPC
     help Spawn the Villager to Open the GUI
     user player
-    hook UISpawnVillager
+    hook UISpawnNPC
     }
 
 }

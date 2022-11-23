@@ -3,16 +3,13 @@ package nopeimnothere.upgradable_items.UpgradeItems.commands;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.VillagerCareerChangeEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -119,12 +116,21 @@ public class CommandManager implements Listener {
 
 
 
-    @CommandHook("UISpawnVillager")
-    public void SpawnNPC(Player p) {
+    @CommandHook("UISpawnNPC")
+    public void SpawnNPC(Player p, EntityType entityType) {
         if (p.hasPermission("UpgradeItems.SpawnVillager")) {
-            Villager v = (Villager) p.getWorld().spawnEntity(p.getLocation(), EntityType.VILLAGER);
-            v.setCustomName(ChatColor.GOLD + "Upgrade Your Items");
-            p.sendMessage("Villager created!");
+            Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
+            e.setInvulnerable(true);
+            e.setSilent(true);
+            int entityID = e.getEntityId();
+            if(e instanceof Monster) {
+                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_FOLLOW_RANGE)).setBaseValue(-1);
+                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
+            } else {
+                Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
+            }
+            e.setCustomName(ChatColor.GOLD + "Upgrade Your Items");
+            p.sendMessage("Entity created!");
 
         }
     }
@@ -132,9 +138,11 @@ public class CommandManager implements Listener {
     @EventHandler (priority = EventPriority.NORMAL)
     public void on(PlayerInteractAtEntityEvent e) {
         Player p = e.getPlayer();
-        Villager v = (Villager) e.getRightClicked();
-        if(e.getRightClicked() instanceof Villager && Objects.requireNonNull(v.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items")) {
+        if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
+            Entity en = (Entity) e.getRightClicked();
+            if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items")) {
                 GUIOpen(p);
+            }
         }
     }
 }
