@@ -3,15 +3,12 @@ package nopeimnothere.upgradable_items;
 
 import nopeimnothere.upgradable_items.UpgradeItems.UATConfigManager;
 import nopeimnothere.upgradable_items.UpgradeItems.commands.CommandManager;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
 import redempt.redlib.commandmanager.ArgType;
 import redempt.redlib.commandmanager.CommandParser;
 import redempt.redlib.config.ConfigManager;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public final class Upgradable_Items extends JavaPlugin {
 

@@ -9,7 +9,7 @@ UAI {
     hook UIGuiOpen
     }
 
-    Spawn-NPC entityType:entity {
+    Spawn-NPC entityType:entity* string:customName? {
     permission UpgradeItems.NPC
     help Spawn the Entity of choice to Open the GUI
     user player

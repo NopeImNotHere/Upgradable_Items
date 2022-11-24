@@ -131,7 +131,11 @@ public class CommandManager implements Listener {
     }
 
     @CommandHook("UISpawnNPC")
-    public void SpawnNPC(Player p, EntityType entityType) {
+    public void SpawnNPC(Player p, EntityType entityType, String customName) {
+        if(customName == null) {
+            customName = "Upgrade Your Items";
+        }
+
         Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
         if (p.hasPermission("UpgradeItems.SpawnVillager") && e.getType().isAlive()) {
             e.setInvulnerable(true);
@@ -142,7 +146,7 @@ public class CommandManager implements Listener {
             } else {
                 Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
             }
-            e.setCustomName(ChatColor.GOLD + "Upgrade Your Items");
+            e.setCustomName(ChatColor.GOLD + customName);
             p.sendMessage(ChatColor.GREEN + "" + e.getType() + " with Upgrade GUI created!");
         } else {
             p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
@@ -153,7 +157,7 @@ public class CommandManager implements Listener {
     public void on(PlayerInteractAtEntityEvent e) {
         Player p = e.getPlayer();
         if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
-            Entity en = (Entity) e.getRightClicked();
+            Entity en = e.getRightClicked();
             if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items")) {
                 GUIOpen(p);
             }
