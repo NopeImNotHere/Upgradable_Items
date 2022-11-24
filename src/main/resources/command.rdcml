@@ -11,7 +11,7 @@ UAI {
 
     Spawn-NPC entityType:entity {
     permission UpgradeItems.NPC
-    help Spawn the Villager to Open the GUI
+    help Spawn the Entity of choice to Open the GUI
     user player
     hook UISpawnNPC
     }

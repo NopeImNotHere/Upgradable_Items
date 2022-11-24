@@ -1,5 +1,6 @@
 package nopeimnothere.upgradable_items.UpgradeItems.commands;
 
+import nopeimnothere.upgradable_items.Upgradable_Items;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -45,8 +46,21 @@ public class CommandManager implements Listener {
 
         ItemButton button = ItemButton.create(new ItemBuilder(Material.EMERALD_BLOCK).setName(ChatColor.GOLD + "" + ChatColor.ITALIC + "Upgrade"), event -> {
 
-            Material IT = gui.getInventory().getItem(11).getType();
-            Material SI = gui.getInventory().getItem(12).getType();
+            Material IT = null;
+            if (gui.getInventory().getItem(11) != null) {
+                IT = gui.getInventory().getItem(11).getType();
+            } else {
+                player.sendMessage(ChatColor.RED + "Please add the first ingredient into the GUI");
+                return;
+            }
+            Material SI = null;
+            if (gui.getInventory().getItem(12) != null) {
+                SI = gui.getInventory().getItem(12).getType();
+            } else {
+                player.sendMessage(ChatColor.RED + "Please add the second ingredient into the GUI");
+                return;
+            }
+
 
             assert UIL != null;
             assert SUIL != null;
@@ -82,9 +96,10 @@ public class CommandManager implements Listener {
     }
     private void UpgradeTheItem(InventoryGUI gui, Object UpgradeItem) {
 
+
         ItemMeta UpgradeItemMeta = Objects.requireNonNull(gui.getInventory().getItem(11)).getItemMeta();
         gui.clearSlot(11);
-
+        
         ItemStack SecondaryItem = gui.getInventory().getItem(12);
         int SecondaryItemAmount = gui.getInventory().getItem(12).getAmount();
         if (SecondaryItemAmount > 1) {
@@ -96,6 +111,7 @@ public class CommandManager implements Listener {
 
         gui.fill(14, 15, new ItemStack(Material.valueOf("" + UpgradeItem)));
         Objects.requireNonNull(gui.getInventory().getItem(14)).setItemMeta(UpgradeItemMeta);
+
     }
 
     private boolean GetItemAtListIndex(ArrayList OutsideList, Material SearchItem) {
@@ -114,15 +130,12 @@ public class CommandManager implements Listener {
         return LI;
     }
 
-
-
     @CommandHook("UISpawnNPC")
     public void SpawnNPC(Player p, EntityType entityType) {
-        if (p.hasPermission("UpgradeItems.SpawnVillager")) {
-            Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
+        Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
+        if (p.hasPermission("UpgradeItems.SpawnVillager") && e.getType().isAlive()) {
             e.setInvulnerable(true);
             e.setSilent(true);
-            int entityID = e.getEntityId();
             if(e instanceof Monster) {
                 Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_FOLLOW_RANGE)).setBaseValue(-1);
                 Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
@@ -130,8 +143,9 @@ public class CommandManager implements Listener {
                 Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
             }
             e.setCustomName(ChatColor.GOLD + "Upgrade Your Items");
-            p.sendMessage("Entity created!");
-
+            p.sendMessage(ChatColor.GREEN + "" + e.getType() + " with Upgrade GUI created!");
+        } else {
+            p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
         }
     }
 
