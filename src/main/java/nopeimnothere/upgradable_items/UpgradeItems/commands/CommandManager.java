@@ -1,6 +1,7 @@
 package nopeimnothere.upgradable_items.UpgradeItems.commands;
 
-import nopeimnothere.upgradable_items.Upgradable_Items;
+
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,7 +11,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -154,7 +155,7 @@ public class CommandManager implements Listener {
     }
 
     @EventHandler (priority = EventPriority.NORMAL)
-    public void on(PlayerInteractAtEntityEvent e) {
+    public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e) {
         Player p = e.getPlayer();
         if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
             Entity en = e.getRightClicked();
