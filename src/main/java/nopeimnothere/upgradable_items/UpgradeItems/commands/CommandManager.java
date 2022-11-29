@@ -2,8 +2,12 @@ package nopeimnothere.upgradable_items.UpgradeItems.commands;
 
 
 
+import dev.sergiferry.playernpc.api.NPC;
+import dev.sergiferry.playernpc.api.NPCLib;
+import org.apache.commons.io.IOUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
@@ -15,18 +19,22 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import redempt.redlib.commandmanager.CommandHook;
 import redempt.redlib.inventorygui.InventoryGUI;
 import redempt.redlib.inventorygui.ItemButton;
 import redempt.redlib.itemutils.ItemBuilder;
 
+
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
-import static nopeimnothere.upgradable_items.Upgradable_Items.instance;
+import static nopeimnothere.upgradable_items.Upgradable_Items.*;
 
 public class CommandManager implements Listener {
-
-
 
     @CommandHook("UIGuiOpen")
     public void GUIOpen(CommandSender player) {
@@ -95,6 +103,48 @@ public class CommandManager implements Listener {
         gui.addButton(button, 13);
         gui.open((Player) player);
     }
+    @CommandHook("UISpawnCreatureNPC")
+    public void SpawnCreatureNPC(Player p, EntityType entityType, String customName) {
+        if(customName == null) {
+            customName = "Upgrade Your Items";
+        }
+
+        Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
+
+        if (p.hasPermission("UpgradeItems.NPC") && e.getType().isAlive()) {
+            e.setInvulnerable(true);
+            e.setSilent(true);
+
+            if(e instanceof Monster) {
+                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_FOLLOW_RANGE)).setBaseValue(-1);
+                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
+            } else {
+                Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
+            }
+
+            e.setCustomName(ChatColor.GOLD + customName);
+            e.isPersistent();
+            p.sendMessage(ChatColor.GREEN + "" + e.getType() + " with Upgrade GUI created!");
+
+
+        } else {
+            p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
+        }
+    }
+
+    @CommandHook("UISpawnPlayerNPC")
+    public void SpawnPlayerNPC(CommandSender player, String Player_Name, String customName) {
+        Player p = (Player) player;
+        String id = getUUID(Player_Name);
+        Location PlayerLocation = p.getLocation();
+        NPC.Global npc = NPCLib.getInstance().generateGlobalNPC(instance, id, PlayerLocation);
+
+        npc.setText(customName);
+        npc.setShowOnTabList(false);
+        npc.setCollidable(false);
+
+    }
+
     private void UpgradeTheItem(InventoryGUI gui, Object UpgradeItem) {
 
 
@@ -131,27 +181,18 @@ public class CommandManager implements Listener {
         return LI;
     }
 
-    @CommandHook("UISpawnNPC")
-    public void SpawnNPC(Player p, EntityType entityType, String customName) {
-        if(customName == null) {
-            customName = "Upgrade Your Items";
+    private String getUUID(String player_Name) {
+        String url = "https://api.mojang.com/users/profiles/minecraft/"+player_Name;
+        try {
+            @SuppressWarnings("deprecation")
+            String UUIDJson = IOUtils.toString(new URL(url));
+            if(UUIDJson.isEmpty()) return "invalid name";
+            JSONObject UUIDObject = (JSONObject) JSONValue.parseWithException(UUIDJson);
+            return UUIDObject.get("id").toString();
+        } catch (IOException | ParseException e) {
+            e.printStackTrace();
         }
-
-        Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
-        if (p.hasPermission("UpgradeItems.SpawnVillager") && e.getType().isAlive()) {
-            e.setInvulnerable(true);
-            e.setSilent(true);
-            if(e instanceof Monster) {
-                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_FOLLOW_RANGE)).setBaseValue(-1);
-                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
-            } else {
-                Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
-            }
-            e.setCustomName(ChatColor.GOLD + customName);
-            p.sendMessage(ChatColor.GREEN + "" + e.getType() + " with Upgrade GUI created!");
-        } else {
-            p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
-        }
+        return "error";
     }
 
     @EventHandler (priority = EventPriority.NORMAL)
@@ -159,9 +200,11 @@ public class CommandManager implements Listener {
         Player p = e.getPlayer();
         if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
             Entity en = e.getRightClicked();
-            if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items")) {
+            if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items") && en.isPersistent()) {
                 GUIOpen(p);
             }
         }
     }
+
+
 }

@@ -9,11 +9,18 @@ UAI {
     hook UIGuiOpen
     }
 
-    Spawn-NPC entityType:entity* string:customName? {
-    permission UpgradeItems.NPC
+    Spawn-Creature-NPC entityType:entity* string:customName? {
+    permission UpgradeItems.NPC-Creature
     help Spawn the Entity of choice to Open the GUI
     user player
-    hook UISpawnNPC
+    hook UISpawnCreatureNPC
+    }
+
+    Spawn-Creature-NPC string:Player_Name* string:customName? {
+    permission UpgradeItems.NPC-Player
+    help Spawn the Player of Choice to Open the GUI
+    user player
+    hook UISpawnPlayerNPC
     }
 
 }
