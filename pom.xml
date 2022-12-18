@@ -6,7 +6,7 @@
 
     <groupId>NopeImNotHere</groupId>
     <artifactId>Upgradable_Items</artifactId>
-    <version>1.1.1</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <name>Upgradable_Items</name>
@@ -65,10 +65,6 @@
             <id>redempt.dev</id>
             <url>https://redempt.dev</url>
         </repository>
-        <repository>
-            <id>ranull-repo-external</id>
-            <url>https://repo.ranull.com/maven/external/</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -83,12 +79,6 @@
             <artifactId>RedLib</artifactId>
             <version>6.5.8</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>dev.sergiferry</groupId>
-            <artifactId>playernpc</artifactId>
-            <version>2022.8</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

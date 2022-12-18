@@ -1,13 +1,7 @@
 package nopeimnothere.upgradable_items.UpgradeItems.commands;
 
-
-
-import dev.sergiferry.playernpc.api.NPC;
-import dev.sergiferry.playernpc.api.NPCLib;
-import org.apache.commons.io.IOUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
@@ -19,22 +13,20 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
+import org.bukkit.metadata.FixedMetadataValue;
 import redempt.redlib.commandmanager.CommandHook;
 import redempt.redlib.inventorygui.InventoryGUI;
 import redempt.redlib.inventorygui.ItemButton;
 import redempt.redlib.itemutils.ItemBuilder;
 
 
-import java.io.IOException;
-import java.net.URL;
+
 import java.util.*;
 
 import static nopeimnothere.upgradable_items.Upgradable_Items.*;
 
 public class CommandManager implements Listener {
+
 
     @CommandHook("UIGuiOpen")
     public void GUIOpen(CommandSender player) {
@@ -110,6 +102,7 @@ public class CommandManager implements Listener {
         }
 
         Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
+        e.setMetadata("gui", new FixedMetadataValue(instance, "Hello"));
 
         if (p.hasPermission("UpgradeItems.NPC") && e.getType().isAlive()) {
             e.setInvulnerable(true);
@@ -131,20 +124,6 @@ public class CommandManager implements Listener {
             p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
         }
     }
-
-    @CommandHook("UISpawnPlayerNPC")
-    public void SpawnPlayerNPC(CommandSender player, String Player_Name, String customName) {
-        Player p = (Player) player;
-        String id = getUUID(Player_Name);
-        Location PlayerLocation = p.getLocation();
-        NPC.Global npc = NPCLib.getInstance().generateGlobalNPC(instance, id, PlayerLocation);
-
-        npc.setText(customName);
-        npc.setShowOnTabList(false);
-        npc.setCollidable(false);
-
-    }
-
     private void UpgradeTheItem(InventoryGUI gui, Object UpgradeItem) {
 
 
@@ -181,30 +160,15 @@ public class CommandManager implements Listener {
         return LI;
     }
 
-    private String getUUID(String player_Name) {
-        String url = "https://api.mojang.com/users/profiles/minecraft/"+player_Name;
-        try {
-            @SuppressWarnings("deprecation")
-            String UUIDJson = IOUtils.toString(new URL(url));
-            if(UUIDJson.isEmpty()) return "invalid name";
-            JSONObject UUIDObject = (JSONObject) JSONValue.parseWithException(UUIDJson);
-            return UUIDObject.get("id").toString();
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
-        return "error";
-    }
 
-    @EventHandler (priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e) {
         Player p = e.getPlayer();
         if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
             Entity en = e.getRightClicked();
-            if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items") && en.isPersistent()) {
+            if (en.hasMetadata("gui")) {
                 GUIOpen(p);
             }
         }
     }
-
-
 }

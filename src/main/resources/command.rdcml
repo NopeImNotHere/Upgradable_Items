@@ -15,13 +15,5 @@ UAI {
     user player
     hook UISpawnCreatureNPC
     }
-
-    Spawn-Creature-NPC string:Player_Name* string:customName? {
-    permission UpgradeItems.NPC-Player
-    help Spawn the Player of Choice to Open the GUI
-    user player
-    hook UISpawnPlayerNPC
-    }
-
 }
 
