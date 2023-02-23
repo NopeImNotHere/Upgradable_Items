@@ -1,5 +1,8 @@
-name: Upgradable_Items
-version: '1.1.1'
+name: UpgradeTrader
+version: '2.1.1'
 main: nopeimnothere.upgradable_items.Upgradable_Items
 api-version: 1.19
 authors: [ NopeImNotHere ]
+depend:
+   - Citizens
+

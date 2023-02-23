@@ -1,5 +1,5 @@
 UAI {
-    permission UpgradeItems.rank
+    permission UpgradeItems.default
     help Main Command to all other Commands
 
     GUI-Open {
@@ -9,12 +9,27 @@ UAI {
     hook UIGuiOpen
     }
 
-    Spawn-NPC entityType:entity* string:customName? {
-    permission UpgradeItems.NPC
-    help Spawn the Entity of choice to Open the GUI
-    user player
-    hook UISpawnNPC
+    Spawn {
+        permission UpgradeItems.Spawn
+
+            NPC entityType:entity* string:customName*?(Upgrade Your Items) {
+            help Spawn the Entity of choice to Open the GUI
+            user player
+            hook UISpawnNPC
+            }
+
+            PlayerNPC string:Username* string:customName*?(Upgrade Your Items) {
+            help Spawn a Player NPC of choice to Open the GUI
+            user player
+            hook UISpawnPlayerNPC
+            }
     }
 
+    Remove {
+        permission UpgradeItems.Remove
+        help Lets you remove a Trader in a 5 block radius.
+        user player
+        hook UINPCRemove
+    }
 }
 

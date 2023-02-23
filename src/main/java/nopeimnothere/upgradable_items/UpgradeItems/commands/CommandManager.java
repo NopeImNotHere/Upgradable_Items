@@ -1,33 +1,40 @@
 package nopeimnothere.upgradable_items.UpgradeItems.commands;
 
 
-
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
+import net.citizensnpcs.api.trait.trait.Owner;
+import net.citizensnpcs.trait.LookClose;
+import net.citizensnpcs.trait.SkinTrait;
+import nopeimnothere.upgradable_items.UpgradeItems.Utils.ListUtil;
+import nopeimnothere.upgradable_items.UpgradeItems.Utils.SkinsUtil;
+import nopeimnothere.upgradable_items.UpgradeItems.traits.UpgradableTraderTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.*;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import redempt.redlib.commandmanager.CommandHook;
 import redempt.redlib.inventorygui.InventoryGUI;
 import redempt.redlib.inventorygui.ItemButton;
 import redempt.redlib.itemutils.ItemBuilder;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static nopeimnothere.upgradable_items.Upgradable_Items.instance;
 
 public class CommandManager implements Listener {
-
-
-
     @CommandHook("UIGuiOpen")
     public void GUIOpen(CommandSender player) {
         InventoryGUI gui = new InventoryGUI(Bukkit.createInventory((InventoryHolder) player, 27, "Upgrade Table"));
@@ -67,10 +74,10 @@ public class CommandManager implements Listener {
             assert SUIL != null;
             if (UIL.contains("" + IT)) {
 
-                boolean UIL_InBounds = GetItemAtListIndex(UIL, IT);
-                boolean SI_Exists = ItemIsInList(SUIL, SI);
-                int UII = GetItemAtListInt(UIL, IT);
-                int SII = GetItemAtListInt(SUIL, SI);
+                boolean UIL_InBounds = ListUtil.GetItemAtListIndex(UIL, IT);
+                boolean SI_Exists = ListUtil.ItemIsInList(SUIL, SI);
+                int UII = ListUtil.GetItemAtListInt(UIL, IT);
+                int SII = ListUtil.GetItemAtListInt(SUIL, SI);
 
 
                 if (UIL_InBounds && SI_Exists) {
@@ -95,6 +102,7 @@ public class CommandManager implements Listener {
         gui.addButton(button, 13);
         gui.open((Player) player);
     }
+
     private void UpgradeTheItem(InventoryGUI gui, Object UpgradeItem) {
 
 
@@ -115,53 +123,120 @@ public class CommandManager implements Listener {
 
     }
 
-    private boolean GetItemAtListIndex(ArrayList OutsideList, Material SearchItem) {
-        int LI = OutsideList.indexOf("" + SearchItem);
-        LI = LI + 1;
-        return LI < OutsideList.toArray().length;
-    }
-
-    private boolean ItemIsInList(ArrayList OutsideList, Material SearchItem) {
-        return OutsideList.contains("" + SearchItem);
-    }
-
-    private int GetItemAtListInt(ArrayList OutsideList, Material SearchItem) {
-        int LI = OutsideList.indexOf("" + SearchItem);
-        LI = LI + 1;
-        return LI;
-    }
-
     @CommandHook("UISpawnNPC")
-    public void SpawnNPC(Player p, EntityType entityType, String customName) {
-        if(customName == null) {
-            customName = "Upgrade Your Items";
-        }
+    public void SpawnNPC(Player player, EntityType entityType, String customName) {
+        customName += ChatColor.GOLD;
+        NPC npc = CitizensAPI.getNPCRegistry().createNPC(entityType, customName);
 
-        Entity e = p.getWorld().spawnEntity(p.getLocation(), entityType);
-        if (p.hasPermission("UpgradeItems.SpawnVillager") && e.getType().isAlive()) {
-            e.setInvulnerable(true);
-            e.setSilent(true);
-            if(e instanceof Monster) {
-                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_FOLLOW_RANGE)).setBaseValue(-1);
-                Objects.requireNonNull(((Monster) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
-            } else {
-                Objects.requireNonNull(((Creature) e).getAttribute(Attribute.GENERIC_MOVEMENT_SPEED)).setBaseValue(0);
-            }
-            e.setCustomName(ChatColor.GOLD + customName);
-            p.sendMessage(ChatColor.GREEN + "" + e.getType() + " with Upgrade GUI created!");
-        } else {
-            p.sendMessage(ChatColor.RED + "Please select only a Living entity for this Operation");
-        }
+        Location location = player.getLocation();
+
+        UpgradableTraderTrait upgradableTraderTrait = npc.getOrAddTrait(UpgradableTraderTrait.class);
+
+        npc.spawn(location);
     }
 
-    @EventHandler (priority = EventPriority.NORMAL)
-    public void onPlayerInteractEntityEvent(PlayerInteractEntityEvent e) {
-        Player p = e.getPlayer();
-        if(!(p.getInventory().getItemInMainHand().getType() == Material.NAME_TAG)) {
-            Entity en = e.getRightClicked();
-            if (Objects.requireNonNull(en.getCustomName()).equalsIgnoreCase(ChatColor.GOLD + "Upgrade Your Items")) {
-                GUIOpen(p);
+    @CommandHook("UISpawnPlayerNPC")
+    public void SpawnPlayerNPC(Player player, String Username, String customName) {
+        if(player.hasPermission("UpgradeItems.Spawn")) {
+            customName = ChatColor.GOLD + customName;
+            NPC npc = CitizensAPI.getNPCRegistry().createNPC(EntityType.PLAYER, customName);
+            Location location = player.getLocation();
+
+            String UUID = SkinsUtil.getPlayerUUID(Username);
+            String signatureValue = signatureValue = SkinsUtil.getSignature(UUID);
+            String textureValue = textureValue = SkinsUtil.getTexture(UUID);
+
+            SkinTrait skinTrait = npc.getOrAddTrait(SkinTrait.class);
+            skinTrait.setSkinPersistent(UUID, signatureValue, textureValue);
+
+            npc.getOrAddTrait(Owner.class).setOwner(UUID);
+
+            LookClose lookClose = npc.getOrAddTrait(LookClose.class);
+            lookClose.lookClose(true);
+
+            UpgradableTraderTrait upgradableTraderTrait = npc.getOrAddTrait(UpgradableTraderTrait.class);
+
+            npc.spawn(location);
+         }
+     }
+
+    @CommandHook("UINPCRemove")
+    public void NPCRemoval(CommandSender commandSender) {
+        if (!(commandSender instanceof Player player)) {
+            commandSender.sendMessage(ChatColor.RED + "This command can only be executed by a player.");
+            return;
+        }
+
+        double radius = 5;
+        List<Entity> nearbyEntities = player.getNearbyEntities(radius, radius, radius);
+        List<NPC> nearbyNPCs = new ArrayList<>();
+
+        for(Entity entity : nearbyEntities) {
+                NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+                if(npc != null && npc.hasTrait(UpgradableTraderTrait.class)) {
+                    nearbyNPCs.add(npc);
             }
         }
+
+        if (nearbyNPCs.isEmpty()) {
+            player.sendMessage(ChatColor.RED + "No NPCs found nearby.");
+            return;
+        }
+
+        int inventorySize = (int) Math.ceil(nearbyNPCs.size() / 9.0) * 9;
+        InventoryGUI inventory = new InventoryGUI(Bukkit.createInventory(player, inventorySize, "Select an NPC to destroy: "));
+
+        for(int i = 0; i < nearbyNPCs.size(); i++) {
+
+            NPC npc = CitizensAPI.getNPCRegistry().getById(nearbyNPCs.get(i).getId());
+            SkinTrait skinTrait = npc.getOrAddTrait(SkinTrait.class);
+            String texture = skinTrait.getTexture();
+
+            GameProfile profile = new GameProfile(UUID.randomUUID(), "");
+            profile.getProperties().put("textures", new Property("textures", texture));
+
+            ItemStack head = new ItemStack(Material.PLAYER_HEAD, 1);
+            SkullMeta meta = (SkullMeta) head.getItemMeta();
+
+            if(npc.getEntity().getType() == EntityType.PLAYER) {
+                Field profileField = null;
+                try {
+                    profileField = meta.getClass().getDeclaredField("profile");
+                    profileField.setAccessible(true);
+                    profileField.set(meta, profile);
+                } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException |
+                         SecurityException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            head.setItemMeta(meta);
+
+            int nextFreeSlot = -1;
+
+            for(int j = 0; i < inventory.getInventory().getSize(); j++) {
+                if(inventory.getInventory().getItem(i) == null) {
+                    nextFreeSlot = i;
+                    break;
+                }
+            }
+
+            Location NPC_Location = npc.getStoredLocation();
+            String x = String.valueOf(NPC_Location.getBlockX());
+            String y = String.valueOf(NPC_Location.getBlockY());
+            String z = String.valueOf(NPC_Location.getBlockZ());
+
+
+            ItemButton button = ItemButton.create(new ItemBuilder(head)
+                    .setLore("Mob-Type: " + npc.getEntity().getType() + "\n","Location: " + "X: " + x + "\n", "Y: " + y + "\n", "Z: " + z + "\n", "NPC Id: " + npc.getId())
+                    .setName(npc.getName()), e -> {
+                npc.destroy();
+                e.getWhoClicked().closeInventory();
+            });
+            inventory.addButton(button, nextFreeSlot);
+        }
+        inventory.open(player);
+
     }
+
 }

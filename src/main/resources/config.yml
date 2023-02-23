@@ -1,2 +1,3 @@
 first_ingredient: [VOID_AIR, DIAMOND_SWORD, NETHERITE_SWORD, DIAMOND_AXE, NETHERITE_AXE]
 second_ingredient: [VOID_AIR, NETHERITE_INGOT]
+CitizensTraitsDebug: false
