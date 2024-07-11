@@ -1,4 +1,7 @@
-# Upgradable_Items - Plugin to replace the Smithing Table with Customizable upgrade Paths
+***
+# EFFICTIVE IMMEDIATELTY THIS REPO IS ARCHIVED, NO FURTHER UPDATES, NO FURTHER SUPPORT
+***
+## Upgradable_Items - Plugin to replace the Smithing Table with Customizable upgrade Paths
 
 [![GitHub release](https://img.shields.io/github/release/NopeImNotHere/Upgradable_Items?include_prereleases=&sort=semver&color=green)](https://github.com/NopeImNotHere/Upgradable_Items/releases/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](#license)
